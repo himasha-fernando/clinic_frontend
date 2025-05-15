@@ -1,0 +1,183 @@
+.home-container {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f3f4f6;
+}
+
+/* Topbar */
+.topbar {
+  background-color: #0f172a;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 24px;
+  align-items: center;
+}
+
+.download-button {
+  background-color: #1e3a8a;
+  color: white;
+  padding: 6px 12px;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.download-button:hover {
+  background-color: #0f172a;
+}
+
+.topbar-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-input {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+  color: #000;
+}
+
+.topbar-button {
+  background-color: #1e3a8a;
+  padding: 8px 16px;
+  color: white;
+  font-weight: bold;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.topbar-button:hover {
+  background-color: #0f172a;
+}
+
+/* Header Banner */
+.header-banner {
+  height: 500px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.header-overlay {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: 40px;
+}
+
+.header-text h1 {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.header-text p {
+  color: white;
+  font-size: 1.1rem;
+  margin-top: 10px;
+  max-width: 500px;
+}
+
+/* Main Section */
+.main-section {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+
+.health-network {
+  background-color: #14b8a6;
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.health-network h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.health-network ul {
+  margin-top: 16px;
+  list-style-type: none;
+  padding: 0;
+}
+
+.health-network li {
+  border-bottom: 1px solid white;
+  padding: 8px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Services Grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.service-box {
+  background-color: #0f172a;
+  color: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  transition: background-color 0.3s;
+}
+
+.service-box:hover {
+  background-color: #1e293b;
+}
+
+.service-box .icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+/* Footer */
+.footer {
+  background-color: #0f172a;
+  color: white;
+  padding: 40px 24px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.footer h3,
+.footer h4 {
+  margin-bottom: 12px;
+}
+
+/* Social Sidebar */
+.social-sidebar {
+  position: fixed;
+  top: 40%;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1000;
+}
+
+.social-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
