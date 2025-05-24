@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import "../assets/css/RegistrationForm.css";
+import Navbar from "../components/Navbar";
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
@@ -56,6 +57,8 @@ const RegistrationForm = () => {
 
   return (
     <>
+     <div className="login-page-container">
+        <Navbar/>
       {showSuccessPopup && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -67,8 +70,10 @@ const RegistrationForm = () => {
 
       <section
         className="register-section"
-        style={{ backgroundImage: "url('/images/16.png')" }}
+        style={{ backgroundImage: "url('/images/4.jpg')" }}
       >
+        <div className="overlay" />
+       
         <div className="register-box">
           <div className="close-button">
             <Link to="/">
@@ -137,7 +142,7 @@ const RegistrationForm = () => {
               </div>
             </div>
 
-            {/* <div className="form-group">
+            <div className="form-group">
               <label htmlFor="role">Role</label>
               <select
                 name="role"
@@ -147,10 +152,10 @@ const RegistrationForm = () => {
                 required
               >
                 <option value="user">User</option>
-                <option value="manager">Manager</option>
-                <option value="admin">Admin</option>
+                <option value="doctor">Doctor</option>
+                <option value="staff">Staff</option>
               </select>
-            </div> */}
+            </div> 
 
             <div className="form-actions">
               <Link to="/login" className="back-btn">
@@ -162,7 +167,9 @@ const RegistrationForm = () => {
             </div>
           </form>
         </div>
+        
       </section>
+      </div>
     </>
   );
 };

@@ -1,82 +1,97 @@
-/* RegistrationForm.css */
+/* Luxurious Registration Form */
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6); /* Adjust darkness here */
+  z-index: 0; /* BELOW the form */
+}
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+}
 
 .register-section {
   min-height: 100vh;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  overflow: hidden;
 }
+
 
 .register-box {
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 2rem;
-  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 2.5rem;
+  border-radius: 2rem;
+  max-width: 500px;
   width: 100%;
-  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.close-button button {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 9999px;
-  padding: 0.25rem 0.75rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.close-button button:hover {
-  background-color: #b91c1c;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 1; /* above the overlay */
+  position: relative;
 }
 
 .register-heading {
   text-align: center;
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: #1f2937;
+  margin-bottom: 2rem;
+  color: #fff;
+ font-family: 'Playfair Display', serif;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
 }
 
 .form-group label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
-  margin-bottom: 0.4rem;
-  color: #374151;
+  margin-bottom: 0.5rem;
+  color: #ffffff; /* Previously #e5e7eb (too light) */
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); /* Add subtle shadow for readability */
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
-  color: #111827;
-  background-color: #f9fafb;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
   outline: none;
+  transition: all 0.3s ease;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+.form-group input::placeholder,
+.form-group select::placeholder {
+  color: #cbd5e1;
+  opacity: 0.9;
 }
 
 .password-group {
@@ -85,63 +100,85 @@
 
 .password-toggle {
   position: absolute;
-  top: 36px;
-  right: 12px;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
   cursor: pointer;
-  color: #6b7280;
+  color: #cbd5e1;
 }
 
 .form-actions {
   display: flex;
-  justify-content: space-between;
   gap: 1rem;
-  margin-top: 1.25rem;
+  margin-top: 1.5rem;
 }
 
-.back-btn button,
-.register-btn {
+.register-btn,
+.back-btn button {
   width: 100%;
-  padding: 0.6rem;
-  background-color: #1e3a8a;
-  color: white;
+  padding: 0.75rem 1rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  background: linear-gradient(to right, #4f46e5, #6366f1);
+  color: #fff;
+  transition: all 0.3s ease;
 }
 
-.back-btn button:hover,
-.register-btn:hover {
-  background-color: #0f172a;
+.register-btn:hover,
+.back-btn button:hover {
+  background: linear-gradient(to right, #4338ca, #4f46e5);
 }
 
-/* Popup styling */
+.close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.close-button button {
+  background-color: #f43f5e;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+}
+
+.close-button button:hover {
+  background-color: #be123c;
+}
+
+/* Popup Styling */
 .popup-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 50;
+  z-index: 9999;
 }
 
 .popup-box {
   background-color: white;
   padding: 2rem;
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   text-align: center;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
 .popup-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #16a34a;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #10b981;
 }
 
 .popup-message {
-  margin-top: 0.5rem;
-  color: #374151;
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  color: #4b5563;
 }

@@ -7,12 +7,14 @@ import UserManage from "./pages/UserManage";
 import PAppointment from "./pages/PAppointment";
 import PDownloadReport from "./pages/PDownloadReport";
 import ForgotPassword from "./pages/ForgotPassword";
-import UserHome from "./pages/UserHome";
 import EditProfile from './pages/EditProfile';
+import Schedule from "./pages/Schedule";
+import About from "./pages/About";
+  
 
-import Admin from "./pages/Admin";
-import Manager from "./pages/Manager";
-import User from "./pages/User";
+import UserHome from "./pages/UserHome";
+import StaffHome from "./pages/StaffHome";
+import DoctorHome from "./pages/DoctorHome";
 import ProtectedRoute from "./ProtectedRoute";  
 
 function App() {
@@ -26,14 +28,15 @@ function App() {
         <Route path="/p-appointment" element={<PAppointment />} />
         <Route path="/p-download-report" element={<PDownloadReport />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/user-home" element={<UserHome />} />
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/about" element={<About />} />
+        
+        
         <Route path="/edit-profile" element={<EditProfile />} />
 
-        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><Admin /></ProtectedRoute>} />
-        <Route path="/manager" element={<Manager />} />
-        <Route path="/user" element={<User />} />
-
-
+        <Route path="/staff-home" element={<ProtectedRoute allowedRoles={["staff"]}><StaffHome /></ProtectedRoute>} />
+        <Route path="/doctor-home" element={<ProtectedRoute allowedRoles={["doctor"]}><DoctorHome /></ProtectedRoute>} />
+        <Route path="/user-home" element={<ProtectedRoute allowedRoles={["user"]} ><UserHome /></ProtectedRoute>} />
       </Routes>
     </Router>
   );

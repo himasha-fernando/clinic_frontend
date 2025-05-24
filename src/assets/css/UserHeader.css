@@ -1,0 +1,38 @@
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  background: #001529 !important;
+  height: 64px;
+  line-height: 64px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.nav-menu {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+  border-bottom: none;
+}
+
+.user-actions {
+  margin-left: auto;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: #1890ff !important;
+}
+
+.ant-menu-dark .ant-menu-item:hover {
+  background-color: #1890ff !important;
+}
+
+.ant-dropdown-link {
+  color: #fff;
+  cursor: pointer;
+}

@@ -1,36 +1,31 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, Lock, Mail } from "lucide-react";
 import "../assets/css/LoginForm.css";
+import Navbar from "../components/Navbar";
 
 const LoginForm = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     axios
       .post("http://localhost:8080/api/auth/login", formData)
-      .then((response) => {
-        const { token, user } = response.data;
-
-        console.log("Login successful:", response.data);
-
+      .then((res) => {
+        const { token, user } = res.data;
         localStorage.setItem("token", token);
         localStorage.setItem("userID", user.id);
         localStorage.setItem("userName", user.name);
@@ -39,92 +34,83 @@ const LoginForm = () => {
         localStorage.setItem("userRole", user.role);
         
 
-        if (user.role === "admin") {
-          navigate("/admin");
-        } else if (user.role === "manager") {
-          navigate("/manager");
-        } else {
-          navigate("/user-home");
-        }
+        if (user.role === "staff") navigate("/staff-home");
+        else if (user.role === "doctor") navigate("/doctor-home");
+        else navigate("/user-home");
       })
-      .catch((error) => {
-        console.error("Error during login:", error);
-      });
+      .catch((err) => {
+        setError(err.response?.data?.message || "Login failed.");
+        console.error("Login error:", err);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
-    <div
-      className="login-container"
-      style={{ backgroundImage: `url('/images/4.jpg')` }}
-    >
-      <div className="login-box">
-        <div className="absolute top-2 right-2">
-          <Link to="/">
-            <button
-              className="login-close-btn"
-              aria-label="Close"
-            >
-              X
-            </button>
-          </Link>
-        </div>
-
-        <h2 className="login-heading">Sign in to your account</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="login-label" htmlFor="email">Email</label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-              className="login-input"
-            />
+    <div className="login-page-container">
+      <Navbar />
+      <div className="background-image" >
+       <img src="/images/4.jpg"/></div>
+      <div className="overlay" />
+      <div className="login-container">
+        <div className="login-card">
+          <div className="logo-section">
+           
+            <h2>Welcome to the Dermatology Clinic</h2>
+            <p>Log in to manage your appointments and medical records</p>
           </div>
 
-          <div className="mb-4 relative">
-            <label className="login-label" htmlFor="password">Password</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-              className="login-input pr-12"
-            />
-            <div
-              className="password-toggle"
-              onClick={() => setShowPassword((prev) => !prev)}
-            >
-              {showPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
+          {error && <div className="login-error">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="login-form" noValidate>
+            <div className="input-wrapper">
+              <Mail className="input-icon" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email address"
+                required
+              />
             </div>
-          </div>
 
-          <div className="text-right mb-4">
-            <Link to="/forgot-password" className="forgot-password">
-              Forgot password?
-            </Link>
-          </div>
+            <div className="input-wrapper">
+              <Lock className="input-icon" />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((p) => !p)}
+                className="password-toggle"
+                aria-label="Toggle password"
+              >
+                {showPassword ? <EyeOff /> : <Eye />}
+              </button>
+            </div>
 
-          <button type="submit" className="login-submit">
-            Sign In
-          </button>
+            <div className="form-links">
+              <label>
+                <input type="checkbox" name="remember" /> Remember me
+              </label>
+              <Link to="/forgot-password">Forgot password?</Link>
+            </div>
 
-          <div className="login-footer">
-            Don’t have an account yet?{" "}
-            <Link to="/register">Sign up</Link>
-          </div>
-        </form>
+            <button type="submit" className="login-button" disabled={isLoading}>
+              {isLoading ? <span className="spinner" /> : <>Sign In <ArrowRight /></>}
+            </button>
+          </form>
+
+          <p className="signup-text">
+            Don’t have an account?{" "}
+            <Link to="/register" className="signup-link">Register</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

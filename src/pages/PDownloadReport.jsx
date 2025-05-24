@@ -1,5 +1,6 @@
 // src/pages/AddPatient.js
 import React, { useState } from "react";
+import UserHeader from "../components/UserHeader";
 
 function AddPatient() {
   const [formData, setFormData] = useState({
@@ -36,8 +37,10 @@ function AddPatient() {
   };
 
   return (
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300">
+            <UserHeader />
     <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Add Patient Details</h2>
+      <h2 className="text-2xl font-bold mb-4">Get your reports</h2>
       <form onSubmit={handleDownload} className="space-y-4">
         <input
           type="text"
@@ -101,6 +104,7 @@ function AddPatient() {
           Download Report
         </button>
       </form>
+    </div>
     </div>
   );
 }
