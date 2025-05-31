@@ -1,4 +1,4 @@
-.main-nav {
+ .main-nav {
   position: fixed;
   top: 0;
   left: 0;
@@ -793,4 +793,3 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
 }
-

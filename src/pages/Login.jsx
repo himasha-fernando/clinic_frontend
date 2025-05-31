@@ -17,32 +17,42 @@ const LoginForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleLoginSuccess = (user, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("userID", user.id);
+    localStorage.setItem("userName", user.name);
+    localStorage.setItem("userEmail", user.email);
+    localStorage.setItem("userNic", user.nic);
+    localStorage.setItem("userRole", user.role);
+
+    if (user.role === "staff") navigate("/staff-home");
+    else if (user.role === "doctor") navigate("/doctor-home");
+    else navigate("/user-home");
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
-    axios
-      .post("http://localhost:8080/api/auth/login", formData)
-      .then((res) => {
+    try {
+      // First try general login (user/staff)
+      const res = await axios.post("http://localhost:8080/api/auth/login", formData);
+      const { token, user } = res.data;
+      handleLoginSuccess(user, token);
+    } catch (err) {
+      try {
+        // If general login fails, try doctor login
+        const res = await axios.post("http://localhost:8080/api/doctor-auth/login", formData);
         const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("userID", user.id);
-        localStorage.setItem("userName", user.name);
-        localStorage.setItem("userEmail", user.email);
-        localStorage.setItem("userNic", user.nic);
-        localStorage.setItem("userRole", user.role);
-        
-
-        if (user.role === "staff") navigate("/staff-home");
-        else if (user.role === "doctor") navigate("/doctor-home");
-        else navigate("/user-home");
-      })
-      .catch((err) => {
-        setError(err.response?.data?.message || "Login failed.");
-        console.error("Login error:", err);
-      })
-      .finally(() => setIsLoading(false));
+        handleLoginSuccess(user, token);
+      } catch (error2) {
+        setError(error2.response?.data?.message || "Login failed.");
+        console.error("Login error:", error2);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

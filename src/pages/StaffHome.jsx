@@ -1,794 +1,606 @@
-import React, { useState } from 'react';
-import { 
-  Layout, 
-  Menu, 
-  Breadcrumb, 
-  Card, 
-  Row, 
-  Col, 
-  Statistic, 
-  Table, 
-  Tag, 
-  Space, 
-  Button, 
-  Form, 
-  Input, 
-  Select, 
-  DatePicker, 
-  TimePicker, 
-  Upload, 
-  Modal, 
-  Avatar,
-  Badge,
-  Dropdown,
-  message
-} from 'antd';
+import React, { useState, useEffect } from "react";
 import {
-  UserOutlined,
-  TeamOutlined,
-  ScheduleOutlined,
-  FileTextOutlined,
+  Layout,
+  Menu,
+  Form,
+  Input,
+  Button,
+  Select,
+  Row,
+  Col,
+  Card,
+  Table,
+  Space,
+  Modal,
+  message,
+} from "antd";
+import {
   DashboardOutlined,
-  PlusOutlined,
-  SearchOutlined,
-  EditOutlined,
-  DeleteOutlined,
+  CalendarOutlined,
+  ProfileOutlined,
+  UserAddOutlined,
+  TeamOutlined,
   UploadOutlined,
-  DownOutlined,
-  BellOutlined,
-  MedicineBoxOutlined
-} from '@ant-design/icons';
-import "../assets/css//StaffHome.css";
+} from "@ant-design/icons";
+import axios from "axios";
+import ReportUpload from "./AdminUploadReport";
+import ScheduleForm from "./AdminScheduleForm";
+import { Statistic } from "antd";
 
-const { Header, Content, Footer, Sider } = Layout;
-const { SubMenu } = Menu;
+const { Header, Content, Sider } = Layout;
 const { Option } = Select;
-const { TextArea } = Input;
-const { RangePicker } = DatePicker;
+
+
+
+const doctorColumns = (onEdit, onDelete) => [
+  { title: "Name", dataIndex: "name", key: "name" },
+  { title: "Email", dataIndex: "email", key: "email" },
+  { title: "Phone", dataIndex: "phone", key: "phone" },
+  { title: "Specialty", dataIndex: "specialty", key: "specialty" },
+  {
+    title: "Actions",
+    key: "actions",
+    render: (_, record) => (
+      <Space size="middle">
+        <Button type="link" onClick={() => onEdit(record)}>
+          Edit
+        </Button>
+        <Button
+          type="link"
+          danger
+          onClick={() =>
+            Modal.confirm({
+              title: "Are you sure delete this doctor?",
+              onOk: () => onDelete(record._id),
+            })
+          }
+        >
+          Delete
+        </Button>
+      </Space>
+    ),
+  },
+];
+
+const Dashboard = ({ doctors }) => (
+  <Card title="Dashboard">
+    <Row gutter={16}>
+      <Col span={8}>
+        <Card bordered={false}>
+          <Statistic
+            title="Registered Doctors"
+            value={doctors.length}
+            prefix={<TeamOutlined />}
+          />
+        </Card>
+      </Col>
+    </Row>
+  </Card>
+);
+
+const ScheduleAppointment = () => (
+  <Card title="Schedule Appointment">
+    [Schedule Appointment Form Placeholder]
+  </Card>
+);
+const AllAppointments = () => (
+  <Card title="All Appointments">[Appointments List Placeholder]</Card>
+);
+const RegisterPatient = () => (
+  <Card title="Register Patient">[Patient Registration Form Placeholder]</Card>
+);
+const RegisterStaff = () => (
+  <Card title="Register Staff">[Staff Registration Form Placeholder]</Card>
+);
 
 const StaffHome = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isReportModalVisible, setIsReportModalVisible] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState("registerDoctor");
   const [form] = Form.useForm();
-  const [reportForm] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState(null);
 
-  // Sample data
-  const appointments = [
-    {
-      key: '1',
-      patient: 'John Smith',
-      doctor: 'Dr. Sarah Johnson',
-      date: '2023-06-15',
-      time: '10:00 AM',
-      status: 'confirmed',
-      condition: 'Acne'
-    },
-    {
-      key: '2',
-      patient: 'Emily Davis',
-      doctor: 'Dr. Michael Chen',
-      date: '2023-06-15',
-      time: '11:30 AM',
-      status: 'confirmed',
-      condition: 'Eczema'
-    },
-    {
-      key: '3',
-      patient: 'Robert Wilson',
-      doctor: 'Dr. Sarah Johnson',
-      date: '2023-06-16',
-      time: '09:00 AM',
-      status: 'pending',
-      condition: 'Psoriasis'
-    },
-  ];
+  const fetchDoctors = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("http://localhost:8080/api/doctor-auth");
+      setDoctors(res.data.doctors );
+      setLoading(false);
+    } catch {
+      setLoading(false);
+      message.error("Failed to fetch doctors.");
+    }
+  };
 
-  const doctors = [
-    {
-      key: '1',
-      name: 'Dr. Sarah Johnson',
-      specialty: 'Medical Dermatology',
-      availability: 'Mon, Wed, Fri',
-      slots: '10 available'
-    },
-    {
-      key: '2',
-      name: 'Dr. Michael Chen',
-      specialty: 'Cosmetic Dermatology',
-      availability: 'Tue, Thu, Sat',
-      slots: '5 available'
-    },
-  ];
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
-  const patients = [
-    {
-      key: '1',
-      name: 'John Smith',
-      age: 32,
-      gender: 'Male',
-      lastVisit: '2023-05-20',
-      conditions: ['Acne', 'Rosacea']
-    },
-    {
-      key: '2',
-      name: 'Emily Davis',
-      age: 28,
-      gender: 'Female',
-      lastVisit: '2023-05-18',
-      conditions: ['Eczema']
-    },
-  ];
+  const onFinish = async (values) => {
+    try {
+      await axios.post("http://localhost:8080/api/doctor-auth/register", values);
+      message.success("Doctor registered successfully!");
+      form.resetFields();
+      fetchDoctors();
+    } catch (error) {
+      message.error(
+        error.response?.data?.message || "Failed to register doctor."
+      );
+    }
+  };
 
-  const columns = {
-    appointments: [
-      {
-        title: 'Patient',
-        dataIndex: 'patient',
-        key: 'patient',
-      },
-      {
-        title: 'Doctor',
-        dataIndex: 'doctor',
-        key: 'doctor',
-      },
-      {
-        title: 'Date',
-        dataIndex: 'date',
-        key: 'date',
-      },
-      {
-        title: 'Time',
-        dataIndex: 'time',
-        key: 'time',
-      },
-      {
-        title: 'Condition',
-        dataIndex: 'condition',
-        key: 'condition',
-      },
-      {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        render: status => (
-          <Tag color={status === 'confirmed' ? 'green' : 'orange'}>
-            {status.toUpperCase()}
-          </Tag>
-        ),
-      },
-      {
-        title: 'Action',
-        key: 'action',
-        render: (_, record) => (
-          <Space size="middle">
-            <Button type="link" icon={<EditOutlined />} onClick={() => handleEditAppointment(record)} />
-            <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDeleteAppointment(record)} />
-          </Space>
-        ),
-      },
-    ],
-    doctors: [
-      {
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-      },
-      {
-        title: 'Specialty',
-        dataIndex: 'specialty',
-        key: 'specialty',
-      },
-      {
-        title: 'Availability',
-        dataIndex: 'availability',
-        key: 'availability',
-      },
-      {
-        title: 'Available Slots',
-        dataIndex: 'slots',
-        key: 'slots',
-      },
-      {
-        title: 'Action',
-        key: 'action',
-        render: (_, record) => (
-          <Space size="middle">
-            <Button type="link" icon={<EditOutlined />} onClick={() => handleEditDoctor(record)} />
-            <Button type="link" icon={<ScheduleOutlined />} onClick={() => handleEditSlots(record)} />
-          </Space>
-        ),
-      },
-    ],
-    patients: [
-      {
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-      },
-      {
-        title: 'Age',
-        dataIndex: 'age',
-        key: 'age',
-      },
-      {
-        title: 'Gender',
-        dataIndex: 'gender',
-        key: 'gender',
-      },
-      {
-        title: 'Last Visit',
-        dataIndex: 'lastVisit',
-        key: 'lastVisit',
-      },
-      {
-        title: 'Conditions',
-        dataIndex: 'conditions',
-        key: 'conditions',
-        render: conditions => (
+const onEdit = (doctor) => {
+  console.log("Editing doctor:", doctor); // Add this for debugging
+  if (!doctor || !doctor._id) {
+    message.error("Invalid doctor data");
+    return;
+  }
+  setEditingDoctor(doctor);
+  editForm.setFieldsValue({ ...doctor });
+  setIsEditModalVisible(true);
+};
+
+const onEditFinish = async (values) => {
+  console.log("Submitting updated doctor:", values);
+  try {
+    await axios.put(
+      `http://localhost:8080/api/doctor-auth/${editingDoctor._id}`,
+      values
+    );
+    message.success("Doctor updated successfully!");
+    setIsEditModalVisible(false);
+    setEditingDoctor(null);
+    fetchDoctors();
+  } catch (error) {
+    message.error(
+      error.response?.data?.message || "Failed to update doctor."
+    );
+  }
+};
+
+  const onDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this doctor?")) return;
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/doctor-auth/${id}`
+      );
+      alert(response.data.message);
+      fetchDoctors();
+    } catch (error) {
+      alert("Failed to delete doctor");
+    }
+  };
+
+  const renderContent = () => {
+    switch (selectedMenu) {
+      case "dashboard":
+        return <Dashboard doctors={doctors} />;
+      case "schedule":
+        return <ScheduleForm />;
+      case "appointments":
+        return <AllAppointments />;
+      case "registerPatient":
+        return <RegisterPatient />;
+      case "registerDoctor":
+        return (
           <>
-            {conditions.map(condition => (
-              <Tag color="blue" key={condition}>
-                {condition}
-              </Tag>
-            ))}
+            <Card title="Register New Doctor" style={{ marginBottom: 24 }}>
+              <Form form={form} layout="vertical" onFinish={onFinish}>
+                <Form.Item
+                  name="name"
+                  label="Full Name"
+                  rules={[{ required: true, message: "Please enter full name" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[{ required: true, type: "email" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="nic"
+                  label="NIC"
+                  rules={[{ required: true, message: "Please enter NIC" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="password"
+                  label="Password"
+                  rules={[{ required: true, message: "Please enter password" }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+                <Form.Item
+                  name="phone"
+                  label="Phone"
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="specialty"
+                  label="Specialty"
+                  rules={[{ required: true }]}
+                >
+                  <Select>
+                    <Option value="cosmetic">Cosmetic Dermatology</Option>
+                    <Option value="acne">Acne & Scar Treatment</Option>
+                    <Option value="surgical">Skin Cancer Screening</Option>
+                    <Option value="pediatric">Pediatric Dermatology</Option>
+                    <Option value="laser">Laser Treatment</Option>
+                    <Option value="hair">Hair Restoration</Option>
+                  </Select>
+                </Form.Item>
+                <Form.Item
+                  name="degrees"
+                  label="Degrees"
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="experience"
+                  label="Experience"
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item name="notes" label="Notes">
+                  <Input.TextArea rows={3} />
+                </Form.Item>
+                <Form.Item
+                  name="image"
+                  label="Doctor Image URL"
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item
+                      name="rating"
+                      label="Rating"
+                      rules={[{ required: true }]}
+                    >
+                      <Input type="number" step={0.1} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="reviews"
+                      label="Reviews"
+                      rules={[{ required: true }]}
+                    >
+                      <Input type="String" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    Register Doctor
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Card>
+            <Card title="Doctors List">
+              <Table
+                columns={doctorColumns(onEdit, onDelete)}
+                dataSource={doctors}
+                loading={loading}
+                rowKey={(record) => record._id}
+                expandable={{
+                  /* expandedRowRender: (record) => (
+                    <Table
+                      columns={scheduleColumns}
+                      dataSource={record.schedule || []}
+                      pagination={false}
+                      rowKey={(scheduleItem) =>
+                        scheduleItem.day + scheduleItem.time
+                      }
+                      size="small"
+                    />
+                  ), */
+                  rowExpandable: (record) =>
+                    record.schedule && record.schedule.length > 0,
+                }}
+              />
+            </Card>
+            <Modal
+              open={isEditModalVisible}
+              title="Edit Doctor"
+              onCancel={() => setIsEditModalVisible(false)}
+              footer={null}
+              destroyOnClose
+            >
+              <Form form={editForm} layout="vertical" onFinish={onEditFinish}>
+                <Form.Item
+                  name="name"
+                  label="Full Name"
+                  rules={[
+                    { required: true, message: "Please enter full name" },
+                  ]}
+                >
+                  <Input placeholder="Full Name" />
+                </Form.Item>
+
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    {
+                      required: true,
+                      type: "email",
+                      message: "Please enter valid email",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Email" />
+                </Form.Item>
+                <Form.Item
+                  name="nic"
+                  label="NIC"
+                  rules={[{ required: true, message: "Please enter NIC" }]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  name="password"
+                  label="Password"
+                  rules={[{ required: true, message: "Please enter password" }]}
+                >
+                  <Input.Password />
+                </Form.Item>
+
+                <Form.Item
+                  name="phone"
+                  label="Phone"
+                  rules={[
+                    { required: true, message: "Please enter phone number" },
+                  ]}
+                >
+                  <Input placeholder="Phone Number" />
+                </Form.Item>
+
+                <Form.Item
+                  name="specialty"
+                  label="Specialty"
+                  rules={[
+                    { required: true, message: "Please select specialty" },
+                  ]}
+                >
+                  <Select placeholder="Select specialty">
+                    <Option value="cosmetic">
+                      Cosmetic Dermatology Specialist
+                    </Option>
+                    <Option value="acne">
+                      Acne & Scar Treatment Specialist
+                    </Option>
+                    <Option value="surgical">
+                      Skin Cancer Screening Specialist
+                    </Option>
+                    <Option value="pediatric">
+                      Pediatric Dermatology Specialist
+                    </Option>
+                    <Option value="laser">Laser Treatment Specialist</Option>
+                    <Option value="hair">Hair Restoration Specialist</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  name="degrees"
+                  label="Degrees"
+                  rules={[{ required: true, message: "Please enter degrees" }]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  name="experience"
+                  label="Experience"
+                  rules={[
+                    { required: true, message: "Please enter experience" },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item name="notes" label="Notes">
+                  <Input.TextArea rows={3} />
+                </Form.Item>
+
+                <Form.Item
+                  name="image"
+                  label="Doctor Image URL"
+                  rules={[
+                    { required: true, message: "Please enter image URL" },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item
+                      name="rating"
+                      label="Rating"
+                      rules={[
+                        { required: true, message: "Enter rating (1.0 - 5.0)" },
+                        { type: "number", min: 1, max: 5 },
+                      ]}
+                    >
+                      <Input type="number" step={0.1} />
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={12}>
+                    <Form.Item
+                      name="reviews"
+                      label="Reviews"
+                      rules={[
+                        { required: true, message: "Enter reviews" },
+                      ]}
+                    >
+                      <Input type="String" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                {/* <Form.List name="schedule">
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map(({ key, name, ...restField }) => (
+                        <Row gutter={16} key={key} style={{ marginBottom: 12 }}>
+                          <Col span={6}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "day"]}
+                              rules={[
+                                { required: true, message: "Day required" },
+                              ]}
+                            >
+                              <Select placeholder="Day">
+                                <Option value="Monday">Monday</Option>
+                                <Option value="Tuesday">Tuesday</Option>
+                                <Option value="Wednesday">Wednesday</Option>
+                                <Option value="Thursday">Thursday</Option>
+                                <Option value="Friday">Friday</Option>
+                                <Option value="Saturday">Saturday</Option>
+                              </Select>
+                            </Form.Item>
+                          </Col>
+
+                          <Col span={10}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "time"]}
+                              rules={[
+                                { required: true, message: "Time required" },
+                              ]}
+                            >
+                              <Input />
+                            </Form.Item>
+                          </Col>
+
+                          <Col span={6}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "availability"]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Availability status",
+                                },
+                              ]}
+                            >
+                              <Select placeholder="Availability">
+                                <Option value="available">Available</Option>
+                                <Option value="limited">Limited</Option>
+                                <Option value="unavailable">Unavailable</Option>
+                              </Select>
+                            </Form.Item>
+                          </Col>
+
+                          <Col span={2}>
+                            <Button danger onClick={() => remove(name)}>
+                              Remove
+                            </Button>
+                          </Col>
+                        </Row>
+                      ))}
+                      <Form.Item>
+                        <Button type="dashed" onClick={() => add()} block>
+                          + Add Schedule
+                        </Button>
+                      </Form.Item>
+                    </>
+                  )}
+                </Form.List> */}
+
+                <Form.Item>
+                  <Space style={{ display: "flex", justifyContent: "end" }}>
+                    <Button
+                      onClick={() => {
+                        setIsEditModalVisible(false);
+                        setEditingDoctor(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="primary" htmlType="submit">
+                      Update Doctor
+                    </Button>
+                  </Space>
+                </Form.Item>
+              </Form>
+            </Modal>
           </>
-        ),
-      },
-      {
-        title: 'Action',
-        key: 'action',
-        render: (_, record) => (
-          <Space size="middle">
-            <Button type="link" icon={<FileTextOutlined />} onClick={() => viewMedicalRecords(record)} />
-            <Button type="link" icon={<UploadOutlined />} onClick={() => uploadMedicalReport(record)} />
-          </Space>
-        ),
-      },
-    ]
+        );
+      case "registerStaff":
+        return <RegisterStaff />;
+      case "uploadReport":
+        return <ReportUpload />;
+      default:
+        return <Dashboard />;
+    }
   };
-
-  const handleMenuClick = (e) => {
-    setActiveTab(e.key);
-  };
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleOk = () => {
-    form.validateFields()
-      .then(values => {
-        console.log('Received values of form: ', values);
-        setIsModalVisible(false);
-        form.resetFields();
-        message.success('New appointment scheduled successfully!');
-      })
-      .catch(info => {
-        console.log('Validate Failed:', info);
-      });
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields();
-  };
-
-  const showReportModal = () => {
-    setIsReportModalVisible(true);
-  };
-
-  const handleReportOk = () => {
-    reportForm.validateFields()
-      .then(values => {
-        console.log('Received values of form: ', values);
-        setIsReportModalVisible(false);
-        reportForm.resetFields();
-        message.success('Medical report uploaded successfully!');
-      })
-      .catch(info => {
-        console.log('Validate Failed:', info);
-      });
-  };
-
-  const handleReportCancel = () => {
-    setIsReportModalVisible(false);
-    reportForm.resetFields();
-  };
-
-  const handleEditAppointment = (record) => {
-    console.log('Edit appointment:', record);
-    // Implementation would go here
-  };
-
-  const handleDeleteAppointment = (record) => {
-    console.log('Delete appointment:', record);
-    // Implementation would go here
-  };
-
-  const handleEditDoctor = (record) => {
-    console.log('Edit doctor:', record);
-    // Implementation would go here
-  };
-
-  const handleEditSlots = (record) => {
-    console.log('Edit slots for:', record);
-    // Implementation would go here
-  };
-
-  const viewMedicalRecords = (record) => {
-    console.log('View medical records for:', record);
-    // Implementation would go here
-  };
-
-  const uploadMedicalReport = (record) => {
-    console.log('Upload medical report for:', record);
-    showReportModal();
-  };
-
-  const menu = (
-    <Menu>
-      <Menu.Item key="1">Profile</Menu.Item>
-      <Menu.Item key="2">Settings</Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="3">Logout</Menu.Item>
-    </Menu>
-  );
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}>
-        <div className="logo">
-         
-          {!collapsed && <span style={{ color: '#fff' }}>Admin</span>}
+    <Layout style={{ minHeight: "100vh" }}>
+      <Sider theme="light" width={240}>
+        <div
+          style={{
+            height: 64,
+            textAlign: "center",
+            padding: 16,
+            fontWeight: "bold",
+            fontSize: 18,
+          }}
+        >
+          Admin Panel
         </div>
-        <Menu 
-          theme="dark" 
-          defaultSelectedKeys={['dashboard']} 
+        <Menu
           mode="inline"
-          onClick={handleMenuClick}
+          selectedKeys={[selectedMenu]}
+          onClick={({ key }) => setSelectedMenu(key)}
         >
           <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
             Dashboard
           </Menu.Item>
-          <SubMenu key="appointments" icon={<ScheduleOutlined />} title="Appointments">
-            <Menu.Item key="schedule">Schedule New</Menu.Item>
-            <Menu.Item key="view-all">View All</Menu.Item>
-            <Menu.Item key="calendar">Calendar View</Menu.Item>
-          </SubMenu>
-          <SubMenu key="users" icon={<TeamOutlined />} title="Users">
-            <Menu.Item key="register-patient">Register Patient</Menu.Item>
-            <Menu.Item key="register-doctor">Register Doctor</Menu.Item>
-            <Menu.Item key="register-staff">Register Staff</Menu.Item>
-            <Menu.Item key="manage-users">Manage Users</Menu.Item>
-          </SubMenu>
-          <SubMenu key="reports" icon={<FileTextOutlined />} title="Medical Records">
-            <Menu.Item key="upload-report">Upload Report</Menu.Item>
-            <Menu.Item key="view-reports">View Reports</Menu.Item>
-          </SubMenu>
+          <Menu.Item key="schedule" icon={<CalendarOutlined />}>
+            Schedule Appointment
+          </Menu.Item>
+          <Menu.Item key="appointments" icon={<ProfileOutlined />}>
+            All Appointments
+          </Menu.Item>
+          <Menu.Item key="registerPatient" icon={<UserAddOutlined />}>
+            Register Patient
+          </Menu.Item>
+          <Menu.Item key="registerDoctor" icon={<TeamOutlined />}>
+            Register Doctor
+          </Menu.Item>
+          <Menu.Item key="registerStaff" icon={<UserAddOutlined />}>
+            Register Staff
+          </Menu.Item>
+          <Menu.Item key="uploadReport" icon={<UploadOutlined />}>
+            Upload Medical Report
+          </Menu.Item>
         </Menu>
       </Sider>
-      <Layout className="site-layout">
-        <Header className="site-layout-background" style={{ padding: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px' }}>
-            <h2 style={{ color: '#fff', margin: 0 }}>
-              {activeTab === 'dashboard' && 'Dashboard'}
-              {activeTab === 'schedule' && 'Schedule Appointment'}
-              {activeTab === 'view-all' && 'All Appointments'}
-              {activeTab === 'register-patient' && 'Register Patient'}
-              {activeTab === 'register-doctor' && 'Register Doctor'}
-              {activeTab === 'register-staff' && 'Register Staff'}
-              {activeTab === 'upload-report' && 'Upload Medical Report'}
-            </h2>
-            <Space size="large">
-              <Badge count={5}>
-                <BellOutlined style={{ fontSize: '20px', color: '#fff' }} />
-              </Badge>
-              <Dropdown overlay={menu}>
-                <Space>
-                  <Avatar icon={<UserOutlined />} />
-                  <span style={{ color: '#fff' }}>Admin User</span>
-                  <DownOutlined style={{ color: '#fff' }} />
-                </Space>
-              </Dropdown>
-            </Space>
-          </div>
+      <Layout>
+        <Header style={{ background: "#fff", padding: "0 24px", fontSize: 20 }}>
+          {selectedMenu
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase())}
         </Header>
-        <Content style={{ margin: '0 16px' }}>
-          <Breadcrumb style={{ margin: '16px 0' }}>
-            <Breadcrumb.Item>Panadura General Hospital - Dermatology Clinic</Breadcrumb.Item>
-            <Breadcrumb.Item>{activeTab}</Breadcrumb.Item>
-          </Breadcrumb>
-          <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-            {activeTab === 'dashboard' && (
-              <>
-                <Row gutter={16}>
-                  <Col span={6}>
-                    <Card>
-                      <Statistic
-                        title="Total Appointments"
-                        value={124}
-                        valueStyle={{ color: '#3f8600' }}
-                        prefix={<ScheduleOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card>
-                      <Statistic
-                        title="Active Patients"
-                        value={89}
-                        valueStyle={{ color: '#3f8600' }}
-                        prefix={<TeamOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card>
-                      <Statistic
-                        title="Doctors"
-                        value={7}
-                        valueStyle={{ color: '#3f8600' }}
-                        prefix={<UserOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card>
-                      <Statistic
-                        title="Pending Reports"
-                        value={12}
-                        valueStyle={{ color: '#cf1322' }}
-                        prefix={<FileTextOutlined />}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-                <Row gutter={16} style={{ marginTop: 16 }}>
-                  <Col span={12}>
-                    <Card 
-                      title="Recent Appointments" 
-                      extra={<Button type="primary" icon={<PlusOutlined />} onClick={showModal}>New</Button>}
-                    >
-                      <Table 
-                        columns={columns.appointments} 
-                        dataSource={appointments} 
-                        pagination={{ pageSize: 5 }} 
-                      />
-                    </Card>
-                  </Col>
-                  <Col span={12}>
-                    <Card title="Doctors Schedule">
-                      <Table 
-                        columns={columns.doctors} 
-                        dataSource={doctors} 
-                        pagination={{ pageSize: 5 }} 
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: 16 }}>
-                  <Col span={24}>
-                    <Card title="Patient List">
-                      <Table 
-                        columns={columns.patients} 
-                        dataSource={patients} 
-                        pagination={{ pageSize: 5 }} 
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-              </>
-            )}
-            {activeTab === 'schedule' && (
-              <Card title="Schedule New Appointment">
-                <Form
-                  form={form}
-                  layout="vertical"
-                >
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        name="patient"
-                        label="Patient"
-                        rules={[{ required: true, message: 'Please select a patient' }]}
-                      >
-                        <Select placeholder="Select patient" showSearch>
-                          <Option value="john">John Smith</Option>
-                          <Option value="emily">Emily Davis</Option>
-                          <Option value="robert">Robert Wilson</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="doctor"
-                        label="Doctor"
-                        rules={[{ required: true, message: 'Please select a doctor' }]}
-                      >
-                        <Select placeholder="Select doctor">
-                          <Option value="sarah">Dr. Sarah Johnson</Option>
-                          <Option value="michael">Dr. Michael Chen</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        name="date"
-                        label="Date"
-                        rules={[{ required: true, message: 'Please select date' }]}
-                      >
-                        <DatePicker style={{ width: '100%' }} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="time"
-                        label="Time"
-                        rules={[{ required: true, message: 'Please select time' }]}
-                      >
-                        <TimePicker style={{ width: '100%' }} format="HH:mm" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item
-                    name="condition"
-                    label="Condition"
-                    rules={[{ required: true, message: 'Please input condition' }]}
-                  >
-                    <Input placeholder="e.g. Acne, Eczema, Psoriasis" />
-                  </Form.Item>
-                  <Form.Item
-                    name="notes"
-                    label="Notes"
-                  >
-                    <TextArea rows={4} />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Schedule Appointment
-                    </Button>
-                  </Form.Item>
-                </Form>
-              </Card>
-            )}
-            {activeTab === 'register-doctor' && (
-              <Card title="Register New Doctor">
-                <Form layout="vertical">
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        name="firstName"
-                        label="First Name"
-                        rules={[{ required: true, message: 'Please enter first name' }]}
-                      >
-                        <Input placeholder="First Name" />
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="lastName"
-                        label="Last Name"
-                        rules={[{ required: true, message: 'Please enter last name' }]}
-                      >
-                        <Input placeholder="Last Name" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item
-                    name="email"
-                    label="Email"
-                    rules={[{ required: true, type: 'email', message: 'Please enter valid email' }]}
-                  >
-                    <Input placeholder="Email" />
-                  </Form.Item>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        name="specialty"
-                        label="Specialty"
-                        rules={[{ required: true, message: 'Please select specialty' }]}
-                      >
-                        <Select placeholder="Select specialty">
-                          <Option value="medical">Medical Dermatology</Option>
-                          <Option value="cosmetic">Cosmetic Dermatology</Option>
-                          <Option value="surgical">Surgical Dermatology</Option>
-                          <Option value="pediatric">Pediatric Dermatology</Option>
-                        </Select>
-                      </Form.Item>
-                    </Col>
-                    <Col span={12}>
-                      <Form.Item
-                        name="phone"
-                        label="Phone"
-                        rules={[{ required: true, message: 'Please enter phone number' }]}
-                      >
-                        <Input placeholder="Phone" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Form.Item
-                    name="availability"
-                    label="Availability"
-                    rules={[{ required: true, message: 'Please select availability' }]}
-                  >
-                    <Select mode="multiple" placeholder="Select available days">
-                      <Option value="monday">Monday</Option>
-                      <Option value="tuesday">Tuesday</Option>
-                      <Option value="wednesday">Wednesday</Option>
-                      <Option value="thursday">Thursday</Option>
-                      <Option value="friday">Friday</Option>
-                      <Option value="saturday">Saturday</Option>
-                    </Select>
-                  </Form.Item>
-                  <Form.Item>
-                    <Button type="primary" htmlType="submit">
-                      Register Doctor
-                    </Button>
-                  </Form.Item>
-                </Form>
-              </Card>
-            )}
-          </div>
-        </Content>
-        
+        <Content style={{ margin: 24 }}>{renderContent()}</Content>
       </Layout>
-
-      {/* Schedule Appointment Modal */}
-      <Modal 
-        title="Schedule New Appointment" 
-        visible={isModalVisible} 
-        onOk={handleOk} 
-        onCancel={handleCancel}
-        width={800}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="patient"
-                label="Patient"
-                rules={[{ required: true, message: 'Please select a patient' }]}
-              >
-                <Select placeholder="Select patient" showSearch>
-                  <Option value="john">John Smith</Option>
-                  <Option value="emily">Emily Davis</Option>
-                  <Option value="robert">Robert Wilson</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="doctor"
-                label="Doctor"
-                rules={[{ required: true, message: 'Please select a doctor' }]}
-              >
-                <Select placeholder="Select doctor">
-                  <Option value="sarah">Dr. Sarah Johnson</Option>
-                  <Option value="michael">Dr. Michael Chen</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="date"
-                label="Date"
-                rules={[{ required: true, message: 'Please select date' }]}
-              >
-                <DatePicker style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="time"
-                label="Time"
-                rules={[{ required: true, message: 'Please select time' }]}
-              >
-                <TimePicker style={{ width: '100%' }} format="HH:mm" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            name="condition"
-            label="Condition"
-            rules={[{ required: true, message: 'Please input condition' }]}
-          >
-            <Input placeholder="e.g. Acne, Eczema, Psoriasis" />
-          </Form.Item>
-          <Form.Item
-            name="notes"
-            label="Notes"
-          >
-            <TextArea rows={4} />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Upload Medical Report Modal */}
-      <Modal 
-        title="Upload Medical Report" 
-        visible={isReportModalVisible} 
-        onOk={handleReportOk} 
-        onCancel={handleReportCancel}
-        width={800}
-      >
-        <Form
-          form={reportForm}
-          layout="vertical"
-        >
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="patient"
-                label="Patient"
-                rules={[{ required: true, message: 'Please select a patient' }]}
-              >
-                <Select placeholder="Select patient" showSearch>
-                  <Option value="john">John Smith</Option>
-                  <Option value="emily">Emily Davis</Option>
-                  <Option value="robert">Robert Wilson</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="doctor"
-                label="Doctor"
-                rules={[{ required: true, message: 'Please select a doctor' }]}
-              >
-                <Select placeholder="Select doctor">
-                  <Option value="sarah">Dr. Sarah Johnson</Option>
-                  <Option value="michael">Dr. Michael Chen</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            name="reportType"
-            label="Report Type"
-            rules={[{ required: true, message: 'Please select report type' }]}
-          >
-            <Select placeholder="Select report type">
-              <Option value="biopsy">Biopsy Report</Option>
-              <Option value="blood">Blood Test</Option>
-              <Option value="allergy">Allergy Test</Option>
-              <Option value="imaging">Imaging Results</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="reportDate"
-            label="Report Date"
-            rules={[{ required: true, message: 'Please select report date' }]}
-          >
-            <DatePicker style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item
-            name="findings"
-            label="Findings"
-          >
-            <TextArea rows={4} placeholder="Enter findings from the report" />
-          </Form.Item>
-          <Form.Item
-            name="file"
-            label="Upload Report File"
-            valuePropName="fileList"
-            getValueFromEvent={e => e.fileList}
-            rules={[{ required: true, message: 'Please upload report file' }]}
-          >
-            <Upload name="report" beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Click to upload</Button>
-            </Upload>
-          </Form.Item>
-        </Form>
-      </Modal>
     </Layout>
   );
 };

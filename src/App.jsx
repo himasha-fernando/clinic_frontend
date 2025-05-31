@@ -10,6 +10,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import EditProfile from './pages/EditProfile';
 import Schedule from "./pages/Schedule";
 import About from "./pages/About";
+import AdminUploadReport from "./pages/AdminUploadReport";
+import AdminScheduleForm from "./pages/AdminScheduleForm";
   
 
 import UserHome from "./pages/UserHome";
@@ -30,6 +32,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/about" element={<About />} />
+        <Route path="/admin-upload-report" element={<AdminUploadReport />} />
+        <Route path="/admin-schedule-form" element={<AdminScheduleForm />} />
         
         
         <Route path="/edit-profile" element={<EditProfile />} />
